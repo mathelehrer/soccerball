@@ -1,0 +1,3 @@
+Leave this file
+With this file the required structure of directories is created in the target folder.
+If all runs well, the povray files are saved into the tmp folder and the images can be created from here

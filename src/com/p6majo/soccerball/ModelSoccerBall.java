@@ -1,6 +1,7 @@
 package com.p6majo.soccerball;
 
 import com.p6majo.linalg.Vector;
+import com.p6majo.linalg.Vector3D;
 import com.p6majo.utils.Cuboid;
 import com.p6majo.utils.Particle;
 
@@ -53,12 +54,12 @@ public class ModelSoccerBall extends LagrangeModel {
     public Face[] faces = new Face[]{new Face(0,9,30,36,13,0), new Face( 1,14,37,42,20,1), new Face( 2,5,24,31,18,2), new Face( 3,17,43,48,26,3), new Face( 4,8,19,25,12,4), new Face( 6,23,49,52,29,6), new Face( 7,11,38,53,32,7), new Face( 10,16,44,56,35,10), new Face( 15,21,47,58,41,15), new Face( 22,27,51,59,46,22), new Face( 28,33,54,57,40,28), new Face( 34,39,50,55,45,34), new Face( 0,9,49,23,41,58,0), new Face( 0,13,43,17,47,58,0), new Face( 1,20,38,11,51,59,1), new Face( 1,14,44,16,46,59,1), new Face( 2,5,52,29,35,56,2), new Face( 2,18,37,14,44,56,2), new Face( 3,26,32,7,54,57,3), new Face( 3,17,47,21,40,57,3), new Face( 4,8,48,26,32,53,4), new Face( 4,12,42,20,38,53,4), new Face( 5,24,30,9,49,52,5), new Face( 6,29,35,10,50,55,6), new Face( 6,23,41,15,45,55,6), new Face( 7,11,51,27,33,54,7), new Face( 8,19,36,13,43,48,8), new Face( 10,16,46,22,39,50,10), new Face( 12,25,31,18,37,42,12), new Face( 15,21,40,28,34,45,15), new Face( 19,25,31,24,30,36,19), new Face( 22,27,33,28,34,39,22)};
 
 
-    private double patchConstant = 0.;
+    private double patchConstant = 6.;
     private double floorConstant = 1000.;
-    private double airConstant =0.;
+    private double airConstant =10.;
     private double mass =0.5;
     private double radius =2.5;
-    private double patchDamping = 0.*Math.sqrt(mass*patchConstant);
+    private double patchDamping = 3.*Math.sqrt(mass*patchConstant);
     private double friction = 0.03;//0.03  is realistic
     private double torqueParam = 0.;
     private double drift = 0.;
@@ -125,52 +126,64 @@ public class ModelSoccerBall extends LagrangeModel {
         return getAcceleration(i).add(a);
     }
 
+    /**
+     * Calculate the acceleration that is felt by the particle with index i
+     * @param i index
+     * @return the acceleration
+     */
     @Override
     public Vector getAcceleration(int i) {
         NNParticle particle = (NNParticle) particles.get(i);
         List<NNParticle> neighbours = particle.getNeighbours();
-        List<NNParticle> nNeighbours = particle.getSecondClassNeighbours();
+        List<NNParticle> nNeighbours = particle.getAllExceptNeighbours();
         Vector position =particle.getPosition();
 
-        //gravity
-        Vector gravity = new Vector(0.,-10.0,0.);
+        //gravity //y-compontent is the up-down component in povray
+        Vector aGravity = new Vector(0.,-10.0,0.);
 
         //ground
-        Vector floor = Vector.getZero(3);
+        Vector aFloor = Vector.getZero(3);
         double y = particle.getPosition().getY();
-        Vector v1 = particle.getVelocity();
         double m = particle.getMass();
-        if (y <-0.)
-            floor = new Vector(0.,1.,0.).mul(-(y)*floorConstant/m);
+        if (y <-0.) //particle has contact with the ground
+            aFloor = new Vector(0.,1.,0.).mul(-(y)*floorConstant/m);
 
-
-        //nearest neighbours a=k/m*(|d|-l)/|d| *d
-        Vector nForce = Vector.getZero(3);
+        //neighbour interactions simulating the properties of the material of the soccerball
+        // a=k/m*(|d|-l)/|d| *d
+        Vector aNeighbours = Vector.getZero(3);
         if (patchConstant>0) {
             for (NNParticle neighbour : neighbours) {
                 Vector distance = neighbour.getPosition().sub(position);
                 double d = distance.length();
-                double l = particle.getDistanceTo(neighbour);
+                double l = particle.getDefaultDistance(neighbour);
                 Vector v2 = neighbour.getVelocity();
+                Vector v1 = particle.getVelocity();
                 Vector relV = v1.sub(v2);
-                nForce = nForce.add(distance.mul(patchConstant / m / d * (d - l))).add(relV.mul(-patchDamping / m));
+                double relSpeed=  relV.length();
+                if (relSpeed > 0.001) {
+                    double fraction = Math.abs(relV.dot(distance) / d) / relV.length();
+                    aNeighbours = aNeighbours.add(distance.mul(patchConstant / m / d * (d - l)))
+                            .add(v1.sub(v2).mul(-fraction * patchDamping / m));
+                }
+                else{
+                    aNeighbours = aNeighbours.add(distance.mul(patchConstant / m / d * (d - l)));
+                }
             }
         }
 
-        Vector nnForce = Vector.getZero(3);
+        //interaction of particles that are not neighbours due to air pressure
+        Vector aNotNeighbours = Vector.getZero(3);
         if (airConstant>0) {
-            //second class neighbours interacting via air pressure
             for (NNParticle neighbour : nNeighbours) {
                 Vector distance = neighbour.getPosition().sub(position);
                 double d = distance.length();
-                double l = particle.getDistanceTo(neighbour);
-                Vector v2 = neighbour.getVelocity();
-                Vector relV = v1.sub(v2);
-                nnForce = nnForce.add(distance.mul(airConstant / m / d * (d - l)));
+                double l = particle.getDefaultDistance(neighbour);
+                aNotNeighbours = aNotNeighbours.add(distance.mul(airConstant / m / d * (d - l)));
             }
         }
 
-        return gravity.add(floor).add(nForce).add(nnForce).add(particle.getVelocity().mul(-friction/m));
+        return aGravity.add(aFloor).add(aNeighbours).add(aNotNeighbours)
+                .add(particle.getVelocity().mul(-friction/m));
     }
 
     @Override
@@ -196,7 +209,7 @@ public class ModelSoccerBall extends LagrangeModel {
             }
         }
 
-       //setup nearest neigbours
+        //setup nearest neigbours
         for (Particle particle : particles) {
             for (Face face : faces) {
                 if (face.contains(particle)){

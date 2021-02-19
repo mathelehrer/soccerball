@@ -118,7 +118,7 @@ public class GuiSoccerball extends CodingTrainGui implements SimulationView {
         int width =800;
         int height = 800;
         int dim = 200;
-        povrayView = new PovrayViewSoccerball("soccerball_critical2",100,100,width,height,dim);//standard 30 fps
+        povrayView = new PovrayViewSoccerball("test_animation",100,100,width,height,dim);//standard 30 fps
         povrayView.init(Arrays.asList(model.getFaces()));
 
         //povrayView.setStandardLight();
@@ -136,7 +136,7 @@ public class GuiSoccerball extends CodingTrainGui implements SimulationView {
         canvas.setPenColor(Color.WHITE);
         canvas.line(box.getLeft(),-50,box.getRight(),-50);
 
-        canvas.text(box.getLeft()+30,box.getTop()-5,time+" ms");
+        canvas.text(box.getLeft()+70,box.getTop(),time+" ms (push q to stop and start rendering)");
         if (particles!=null)
             for (Particle particle : particles) {
                 Vector pos = particle.getPosition();

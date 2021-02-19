@@ -30,7 +30,7 @@ public class LagrangeSimulation {
 
     double time;
     int milliSeconds;
-    int resolution = 30;  //Value between 1 and 100 to control the amount of additional time steps taken inbetween to frames
+    int resolution = 50;  //Value between 1 and 100 to control the amount of additional time steps taken inbetween to frames
     //the smaller the faster but the less accurate. If the ball jumps higher after the bounce,
     //it's a good indication that the resolution has to be increased.
 

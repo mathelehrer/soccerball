@@ -111,7 +111,7 @@ public class PovrayViewSoccerball extends PovrayAnimation {
             List<NNParticle> neighbours = nnParticle.getNeighbours();
             for (Particle particle1 : particles) {
                 if (!neighbours.contains(particle1) && !particle1.equals(nnParticle)){
-                    double equiDistance = nnParticle.getDistanceTo((NNParticle) particle1);
+                    double equiDistance = nnParticle.getDefaultDistance((NNParticle) particle1);
                     double actualDistance = nnParticle.getPosition().getDistance(particle1.getPosition());
                     double stretch = (equiDistance-actualDistance)/equiDistance;
                     if (stretch<0)
@@ -153,7 +153,7 @@ public class PovrayViewSoccerball extends PovrayAnimation {
             NNParticle nnParticle = (NNParticle) particle;
             List<NNParticle> neighbours = nnParticle.getNeighbours();
             for (NNParticle neighbour : neighbours) {
-                double equiDistance = nnParticle.getDistanceTo((NNParticle) neighbour);
+                double equiDistance = nnParticle.getDefaultDistance((NNParticle) neighbour);
                 double actualDistance = nnParticle.getPosition().getDistance(neighbour.getPosition());
                 double stretch = (equiDistance - actualDistance) / equiDistance;
                 if (stretch < 0)
@@ -226,10 +226,10 @@ public class PovrayViewSoccerball extends PovrayAnimation {
     public void draw(double time, List<Particle> particles){
         List<PovrayObject> objects = new ArrayList<>();
 
-        objects.addAll(corners(particles));
+        //objects.addAll(corners(particles));
         //objects.addAll(springs_inside(particles));
-       // objects.addAll(springs_outside(particles));
-        //objects.addAll(faces(particles));
+        //objects.addAll(springs_outside(particles));
+        objects.addAll(faces(particles));
 
         generateFrame(objects);
     }

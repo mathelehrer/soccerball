@@ -339,7 +339,8 @@ public abstract class PovrayAnimation implements SimulationView {
 
         fileChecker = new File(url.getPath() + "/" + nameString + ".png");
         if (!fileChecker.exists()) {
-            commandWriter.append("povray -Dx +W" + this.width+" +A +H"+this.height+" "+url.getPath() + "/" + nameString + ".pov >/dev/null 2>1\n");//redirect output to /dev/null see also https://stackoverflow.com/questions/3285408/java-processbuilder-resultant-process-hangs
+            commandWriter.append("povray +W" + this.width+" +A +H"+this.height+" "+url.getPath() + "/" + nameString + ".pov >/dev/null 2>1\n");//redirect output to /dev/null see also https://stackoverflow.com/questions/3285408/java-processbuilder-resultant-process-hangs
+           // commandWriter.append("povray -Dx +W" + this.width+" +A +H"+this.height+" "+url.getPath() + "/" + nameString + ".pov >/dev/null 2>1\n");//redirect output to /dev/null see also https://stackoverflow.com/questions/3285408/java-processbuilder-resultant-process-hangs
         } else {
             System.out.println(frameCounter + " already created.");
             if (frameCounter == frames - 1) {
@@ -462,7 +463,7 @@ public abstract class PovrayAnimation implements SimulationView {
                 .append("global_settings {assumed_gamma 1.0}\n")
                 .append("#default{ finish{ambient 0.1 diffuse 0.9}}\n\n")
                 .append("camera{ location  <0.0 , 100.0 ,-600.0>\n")//<0.0 , 100.0 ,-600.0> //close up <0,20,-600> oder <0,0,-600>
-                .append("\tlook_at   <0.0 , 75.0 , 0.0>\n")  //standard 0,75,0  //close up <0,70,0> oder <0,5,0>
+                .append("\tlook_at   <0.0 , 60.0 , 0.0>\n")  //standard 0,75,0  //close up <0,70,0> oder <0,5,0>
                 .append("\tright x*image_width/image_height\n")
                 .append("\tangle 25\n")//standard 25 //closup 10
                 .append("}\n\n")

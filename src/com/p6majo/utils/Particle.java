@@ -119,6 +119,10 @@ public class Particle implements ObjectIn3DSpace {
      ***********************************************
      */
 
+    /**
+     * Update the position of the particle according to its velocity and acceleration
+     * @param dt
+     */
      public void update(double dt){
             if (!fixed) {
                 this.velocity = this.velocity.add(this.acceleration.mul(dt));

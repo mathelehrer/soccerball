@@ -64,8 +64,8 @@ public class NNParticle extends Particle {
      */
 
     public List<NNParticle> getNeighbours(){return this.neighbours;}
-    public List<NNParticle> getSecondClassNeighbours(){return this.secondClassNeighbour;}
-    public double getDistanceTo(NNParticle neighbour){ return this.equiDistance.get(neighbour); }
+    public List<NNParticle> getAllExceptNeighbours(){return this.secondClassNeighbour;}
+    public double getDefaultDistance(NNParticle neighbour){ return this.equiDistance.get(neighbour); }
 
     /*
      ***********************************************
